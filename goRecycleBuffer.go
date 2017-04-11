@@ -4,51 +4,52 @@ import (
 	"container/list"
 )
 
-var Get chan []byte = nil
-var Give chan []byte = nil
-
-var bufferQueue = new(list.List)
-var bufferSize = 8192
-var makes int
-var frees int
-
-func makeBuffer() []byte {
-	makes += 1
-	return make([]byte, bufferSize)
-}
-
-func GetBufferCount() int {
-	return makes
+type RecycleBuffer struct {
+	Get         chan []byte
+	Give        chan []byte
+	bufferSize  int
+	bufferQueue *list.List
+	makes       int
 }
 
 type queued struct {
 	slice []byte
 }
 
-func Init(size int) {
-	if size > 0 {
-		bufferSize = size
-	}
+func (recycleBuffer *RecycleBuffer) makeBuffer() []byte {
+	recycleBuffer.makes += 1
+	return make([]byte, recycleBuffer.bufferSize)
+}
 
-	if Get == nil && Give == nil {
-		Get = make(chan []byte)
-		Give = make(chan []byte)
+func (recycleBuffer *RecycleBuffer) GetBufferCount() int {
+	return recycleBuffer.makes
+}
 
-		go func() {
-			for {
-				if bufferQueue.Len() == 0 {
-					bufferQueue.PushFront(queued{slice: makeBuffer()})
-				}
+func Init(size int) *RecycleBuffer {
+	recycleBuffer := new(RecycleBuffer)
+	recycleBuffer.bufferSize = size
+	recycleBuffer.bufferQueue = new(list.List)
+	recycleBuffer.makes = 0
 
-				item := bufferQueue.Front()
+	recycleBuffer.Get = make(chan []byte)
+	recycleBuffer.Give = make(chan []byte)
 
-				select {
-				case buffer := <-Give:
-					bufferQueue.PushBack(queued{slice: buffer})
-				case Get <- item.Value.(queued).slice:
-					bufferQueue.Remove(item)
-				}
+	go func() {
+		for {
+			if recycleBuffer.bufferQueue.Len() == 0 {
+				recycleBuffer.bufferQueue.PushFront(queued{slice: recycleBuffer.makeBuffer()})
 			}
-		}()
-	}
+
+			item := recycleBuffer.bufferQueue.Front()
+
+			select {
+			case buffer := <-recycleBuffer.Give:
+				recycleBuffer.bufferQueue.PushBack(queued{slice: buffer})
+			case recycleBuffer.Get <- item.Value.(queued).slice:
+				recycleBuffer.bufferQueue.Remove(item)
+			}
+		}
+	}()
+
+	return recycleBuffer
 }
