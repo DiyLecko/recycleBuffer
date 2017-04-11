@@ -15,7 +15,7 @@ Use following command in your terminal.
 4. Use `goRecycleBuffer.Give<- buf` to free buffer.
 
 here is an example.
-```
+```golang
 // goRecycleBuffer_test.go
 package goRecycleBuffer
 
