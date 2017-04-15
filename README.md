@@ -1,23 +1,23 @@
-# goRecycleBuffer
+# recycleBuffer
 
 ## What is this?
-`goRecycleBuffer` is for effective buffer usage in golang and thread-safe.
+`recycleBuffer` is for effective buffer usage in golang and thread-safe.
 It is wrote with very short and simple code.
 
 ## Installation
 Use following command in your terminal.
-`go get github.com/DiyLecko/goRecycleBuffer`
+`go get github.com/DiyLecko/recycleBuffer`
 
 ## How to use?
-1. Import `import "github.com/DiyLecko/goRecycleBuffer"`
-2. Init with `var rb *goRecycleBuffer.RecycleBuffer = goRecycleBuffer.Init(8192) // 1th param is bufferSize.`
+1. Import `import "github.com/DiyLecko/recycleBuffer"`
+2. Init with `var rb *recycleBuffer.RecycleBuffer = recycleBuffer.Init(8192) // 1th param is bufferSize.`
 3. Use `buf := <-rb.Get` to get buffer
 4. Use `rb.Give<- buf` to free buffer.
 
 here is an example.
 ```golang
-// goRecycleBuffer_test.go
-package goRecycleBuffer
+// recycleBuffer_test.go
+package recycleBuffer
 
 import (
 	"math/rand"
@@ -76,9 +76,9 @@ result is
 --- PASS: TestRecycleBuffer (0.00s)
 === RUN   TestRecycleBuffer2
 --- PASS: TestRecycleBuffer2 (4.58s)
-	goRecycleBuffer_test.go:50: buffer count : 206
+	recycleBuffer_test.go:50: buffer count : 206
 PASS
-ok  	goRecycleBuffer	4.588s
+ok  	recycleBuffer	4.588s
 ```
 
 In above example, buffer is made 1000 times. But in result, buffer is made only 206 times.
