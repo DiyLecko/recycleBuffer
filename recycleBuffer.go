@@ -1,4 +1,4 @@
-package goRecycleBuffer
+package recycleBuffer
 
 import (
 	"container/list"
